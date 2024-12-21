@@ -5,6 +5,8 @@ require("dotenv").config();
 const path = require("path");
 const connectDB = require("./src/config/db");
 const userRoutes = require('./src/routes/userRoutes')
+const depositRoutes = require('./src/routes/depositRoutes')
+const withdrawRoutes = require('./src/routes/withdrawRoutes')
 const errorMiddleware =require('./src/middlewares/errorHandler')
 connectDB();
 
@@ -15,6 +17,8 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/users", userRoutes);
+app.use("/deposit", depositRoutes);
+app.use("/withdraw", withdrawRoutes);
 
 app.use(errorMiddleware);
 

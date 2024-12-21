@@ -36,7 +36,11 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    balance: {
+    winBalance: {
+      type: Number,
+      default: 0,
+    },
+    depositBalance: {
       type: Number,
       default: 0,
     },
