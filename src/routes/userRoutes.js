@@ -9,4 +9,7 @@ router.post("/", userController.createUser);
 router.put("/:id", userController.updateUser);
 router.delete("/:uid", userController.deleteUser);
 
+
+router.get("/checkAdmin/:email", userController.checkAdmin);
+
 module.exports = router;

@@ -22,6 +22,11 @@ const withdraw = new mongoose.Schema(
       required: true,
       
     },
+    number: {
+      type: Number,
+      required: true,
+      
+    },
     status: {
       type: String,
       default: 'pending',

@@ -1,12 +1,14 @@
 const express = require("express");
 const cors = require("cors");
-
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const path = require("path");
 const connectDB = require("./src/config/db");
 const userRoutes = require('./src/routes/userRoutes')
 const depositRoutes = require('./src/routes/depositRoutes')
 const withdrawRoutes = require('./src/routes/withdrawRoutes')
+const supportRoutes = require('./src/routes/supportRoutes')
 const errorMiddleware =require('./src/middlewares/errorHandler')
 connectDB();
 
@@ -14,12 +16,41 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+app.use(
+    cors({
+      origin: ["http://localhost:5173","http://localhost:5174","https://pattee-29048.web.app/"],
+      credentials: true,
+    })
+  );
+
+  app.post("/jwt", (req, res) => {
+    const user = req.body;
+    const token = jwt.sign(user, process.env.DB_SECRET);
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      })
+      .send({ success: true });
+  });
+
+  app.post("/logout", async (req, res) => {
+    const user = req.body;
+    res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+  });
+
+
+
+
+
+
 
 app.use("/users", userRoutes);
 app.use("/deposit", depositRoutes);
 app.use("/withdraw", withdrawRoutes);
-
+app.use('/supports', supportRoutes);
 app.use(errorMiddleware);
 
 // Start the Server

@@ -13,7 +13,7 @@ exports.getAllDeposits = async (req, res, next) => {
   
     const filter = status ? { status } : {};
 
-   console.log(filter,'filter');
+   
     const searchInfo = search
       ? {
           $or: [
@@ -31,7 +31,7 @@ exports.getAllDeposits = async (req, res, next) => {
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 }); 
-console.log(deposits);
+
     
     const totalDeposits = await Deposit.countDocuments(query);
 
@@ -99,13 +99,33 @@ exports.getDepositByEmail = async (req, res, next) => {
 // Update deposit by ID
 exports.updateDeposit = async (req, res, next) => {
   try {
-    const updatedDeposit = await Deposit.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const { email, status, depositBalance } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    const updatedDeposit = await Deposit.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
     if (!updatedDeposit) {
       return res.status(404).json({ message: "Deposit not found" });
     }
+
+
+  
+
+   
+    user.depositBalance += depositBalance;
+    await user.save(); 
+
     res.status(200).json({
       message: "Deposit updated successfully",
       deposit: updatedDeposit,
@@ -114,6 +134,7 @@ exports.updateDeposit = async (req, res, next) => {
     next(error);
   }
 };
+
 
 // Delete deposit by ID
 exports.deleteDeposit = async (req, res, next) => {

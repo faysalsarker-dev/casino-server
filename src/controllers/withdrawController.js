@@ -1,79 +1,118 @@
 const Withdraw = require('../models/withdraw');
+const User = require('../models/User');
+const withdraw = require('../models/withdraw');
+
+// Create a new withdraw request
+
 
 // Create a new withdraw request
 exports.createWithdrawRequest = async (req, res) => {
   try {
-    const { email, amount, type } = req.body;
+    const { email, amount, type, number } = req.body;
 
-    // Validate required fields
+    // Validate input
     if (!email || !amount || !type) {
-      return res.status(400).json({ error: 'All fields are required.' });
+      return res.status(400).json({ error: "All fields are required." });
     }
 
-    const withdrawRequest = new Withdraw({ email, amount, type });
-    const savedRequest = await withdrawRequest.save();
 
-    res.status(201).json({ message: 'Withdrawal request created successfully.', data: savedRequest });
+
+    // Check if the user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Validate withdrawal amount
+    // if (user.winBalance < amount) {
+    //   return res.status(400).json({
+    //     error: "Insufficient balance for this withdrawal.",
+    //   });
+    // }
+
+    // Update user's balance
+    // user.winBalance -= amount;
+    // await user.save();
+
+    // Create the withdrawal request
+    const newWithdraw = await Withdraw.create({
+      email,
+      amount,
+      type,
+      number
+    });
+
+  
+
+    return res.status(200).json({
+      message: "Withdrawal request created successfully.",
+      data: newWithdraw,
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Error creating withdrawal request.', details: error.message });
+    console.error("Error creating withdrawal request:", error.message);
+    return res.status(500).json({
+      error: "Error creating withdrawal request.",
+      details: error.message,
+    });
   }
 };
 
 // Fetch all withdraw requests
 exports.getAllWithdrawRequests = async (req, res) => {
- try {
-     const page = parseInt(req.query.page, 10) || 1;
-     const limit = parseInt(req.query.limit, 10) || 10;
-     const search = req.query.search || "";
-     const status = req.query.status || "pending";
-     const skip = (page - 1) * limit;
- 
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const search = req.query.search || "";
+    const status = req.query.status || "pending";
+    const date = req.query.date || "newest";
+    const skip = (page - 1) * limit;
+
    
-     const filter = status ? { status } : {};
- 
-    console.log(filter,'filter');
-     const searchInfo = search
-       ? {
-           $or: [
-             { transactionCode: { $regex: search, $options: "i" } },
-             { paymentType: { $regex: search, $options: "i" } },
-           ],
-         }
-       : {};
- 
-     
-     const query = { ...filter };
- 
-    
-     const deposits = await Withdraw.find(query)
-       .skip(skip)
-       .limit(limit)
-       .sort({ createdAt: -1 }); 
- console.log(deposits);
-     
-     const totalDeposits = await Withdraw.countDocuments(query);
- 
-     
-     res.status(200).send({
-       deposits,
-       totalDeposits,
-       totalPages: Math.ceil(totalDeposits / limit),
-       currentPage: page,
-     });
-   } catch (error) {
-    res.status(500).json({ error: 'Error fetching withdrawal requests.', details: error.message });
+    const filter = status ? { status } : {};
+
+   
+    const searchInfo = search
+      ? {
+          $or: [
+            { email: { $regex: search, $options: "i" } },
+            { paymentType: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+
+    const query = { ...filter, ...searchInfo };
+
+    // Determine sort order based on date
+    const dateSort = date === "newest" ? { createdAt: -1 } : { createdAt: 1 };
+
+    // Fetch data with filters, pagination, and sorting
+    const withdraws = await Withdraw.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort(dateSort);
+
+    // Get total count of matching documents
+    const totalWithdraws = await Withdraw.countDocuments(query);
+
+    // Send response
+    res.status(200).send({
+      withdraws,
+      totalWithdraws,
+      totalPages: Math.ceil(totalWithdraws / limit),
+      currentPage: page,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching withdrawal requests.", details: error.message });
   }
 };
+
 
 // Approve or reject a withdrawal request
 exports.updateWithdrawRequestStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-
-    if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status value.' });
-    }
 
     const updatedRequest = await Withdraw.findByIdAndUpdate(
       id,

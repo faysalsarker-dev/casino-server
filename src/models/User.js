@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema(
       ],
     },
     phone: {
-      type: Number,
+      type: String,
       required: [true, "Phone number is required"],
       unique: true,
     },
@@ -31,6 +31,11 @@ const UserSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "admin", "moderator"],
       default: "user",
+    },
+    status:{
+      type: String,
+      enum: ["active", "block", "ban"],
+      default: "active",
     },
     profilePhoto: {
       type: String,
