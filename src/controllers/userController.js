@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const admin = require("firebase-admin");
-const serviceAccount = require("./cas-ino-firebase-adminsdk-4cm3v-2eaceb59c2");
+const serviceAccount = require("./../../cas-ino-firebase-adminsdk-4cm3v-2eaceb59c2.json");
 // Get all users
 exports.getAllUsers = async (req, res, next) => {
   try {
