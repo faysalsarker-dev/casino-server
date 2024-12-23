@@ -1,2 +1,5 @@
-node_modules
-cas-ino-firebase-adminsdk-4cm3v-2eaceb59c2.json
+# Ignore the node_modules directory
+node_modules/
+
+# Ignore a specific JSON file
+secret
