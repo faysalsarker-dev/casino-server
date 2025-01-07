@@ -9,6 +9,9 @@ const userRoutes = require('./src/routes/userRoutes')
 const depositRoutes = require('./src/routes/depositRoutes')
 const withdrawRoutes = require('./src/routes/withdrawRoutes')
 const supportRoutes = require('./src/routes/supportRoutes')
+const dashboardRoutes = require('./src/routes/dashboardRoutes')
+const peymentRoutes = require('./src/routes/peymentRoutes')
+const gameRoutes = require('./src/routes/gameRoutes')
 const errorMiddleware =require('./src/middlewares/errorHandler')
 connectDB();
 
@@ -19,7 +22,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
     cors({
-      origin: ["http://localhost:5173","http://localhost:5174","https://pattee-29048.web.app/"],
+      origin: ["http://localhost:5173","http://localhost:5174","https://cas-ino.web.app",""],
       credentials: true,
     })
   );
@@ -51,6 +54,9 @@ app.use("/users", userRoutes);
 app.use("/deposit", depositRoutes);
 app.use("/withdraw", withdrawRoutes);
 app.use('/supports', supportRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/peyment',peymentRoutes);
+app.use('/game',gameRoutes);
 app.use(errorMiddleware);
 
 // Start the Server
